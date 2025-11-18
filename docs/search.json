@@ -8,5 +8,15 @@
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Pruebas de Estacionariedad en Series de Tiempo Financieras</span>"
     ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Series Estacionarias y No Estacionarias (Raíz Unitari)a",
+    "section": "",
+    "text": "1 Introducción\nUna serie estacionaria se puede entender como aquella cuyo comportamiento estadístico tiende a permanecer constante a lo largo del tiempo. En otras palabras, las propiedades como la media y la varianza se mantienen relativamente estables.\nPor otra parte, una serie no estacionaria es aquella cuyas medidas estadísticas cambian con el tiempo. Es decir, el comportamiento es variable al transcurrir del tiempo, pudiendo definirse como una tendencia aleatoria.\nPara determinar si una serie es estacionaria o no, se aplica la Prueba de Raíz Unitaria, que evalúa la presencia de una raíz unitaria en un proceso autoregresivo. Si se encuentra una raíz unitaria, la serie se considera no estacionaria.\nEn tal sentido, la causa de una raíz unitaria se puede entender como el efecto de un coeficiente de correlación igual a uno (\\(\\rho\\) = 1) en un modelo autoregresivo, lo que implica que los valores pasados tienen una influencia persistente en los valores futuros.\nLa implicación es que si se relacionan dos series de tiempo que son no estacionarias, arrojarán relaciones falsas como una \\(R^2\\) alta, a esto se le denomina una regresión espuria.\nA continuación, se presentan casos de la aplicación de pruebas Dickey-Fuller (DF), Dickey-Fuller Aumentada (ADF) y Phillips-Perron (PP) utilizando R, con datos de las acciones de Walmart y Bimbo en México, así como del Índice de Precios y Cotizaciones (IPC) de México, a efecto de determinar si son series estacionarias o no.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introducción</span>"
+    ]
   }
 ]

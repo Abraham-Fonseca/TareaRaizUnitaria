@@ -1,6 +1,8 @@
 project:
   type: book
   output-dir: docs
+  resources:       
+    - .nojekyll    
 
 book:
   title: "Series Estacionarias y No Estacionarias (Raíz Unitari)a"
