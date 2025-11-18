@@ -1,0 +1,42 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Series Estacionarias y No Estacionarias (Raíz Unitari)a",
+    "section": "",
+    "text": "1 Introducción\nUna serie estacionaria se puede entender como aquella cuyo comportamiento estadístico tiende a permanecer constante a lo largo del tiempo. En otras palabras, las propiedades como la media, la varianza y la autocorrelación se mantienen relativamente estables.\nPor otra parte, una serie no estacionaria es aquella cuyas medidas estadísticas cambian con el tiempo. Es decir, el comportamiento es variable al transcurrir del tiempo, pudiendo definirse como una tendencia aleatoria.\nPara determinar si una serie es estacionaria o no, se aplica la Prueba de Raíz Unitaria, que evalúa la presencia de una raíz unitaria en un proceso autoregresivo. Si se encuentra una raíz unitaria, la serie se considera no estacionaria.\nEn tal sentido, la causa de una raíz unitaria se puede entender como el efecto de un coeficiente de correlación igual a uno (\\(\\rho\\) = 1) en un modelo autoregresivo, lo que implica que los valores pasados tienen una influencia persistente en los valores futuros.\nLa implicación es que si se relacionan dos series de tiempo que son no estacionarias, arrojarán relaciones falsas como una \\(R^2\\) alta, a esto se le denomina una regresión espuria.\nA continuación, se presentan casos de la aplicación de pruebas Dickey-Fuller (DF), Dickey-Fuller Aumentada (ADF) y Phillips-Perron (PP) utilizando R, con datos de las acciones de Walmart y América Móvil en México, así como del Índice de Precios y Cotizaciones (IPC) de México, a efecto de determinar si son series estacionarias o no.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introducción</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html",
+    "href": "intro.html",
+    "title": "2  Pruebas de Estacionariedad en Series de Tiempo Financieras",
+    "section": "",
+    "text": "Para realizar las pruebas de estacionaridad, se seleccionaron las acciones de Waltmart y Bimbo de México, y del Índice de Precios y Cotizaciones de México. Primero se obtienen los datos de Yahoo Finance de los precios de cierre del 01 de enero de 2020 a la fecha como se muestra a continuación:\n\n\n[1] \"WALMEX.MX\"\n\n\n[1] \"BIMBOA.MX\"\n\n\n[1] \"MXX\"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPrimero explicaremos brevemente la Prueba Dickey-Fuller (DF). Utiliza un modelo simple para probar si \\(\\rho\\) (coeficiente de correlación) es igual 1. Si se cumple la hipótesis nula, la serie se considera no estacionaria. La hipótesis nula (H0) de la prueba establece que existe una raíz unitaria (\\(\\rho\\) = 1), mientras que la hipótesis alternativa (H1) indica que la serie es estacionaria (\\(\\rho\\) &lt; 1). Su principal debilidad es que asume que los errores no están autocorrelacionados.\nLa ecuación que utiliza DF es:\n\\[ \\Delta Y_t = (\\rho - 1)Y_{t-1} + \\epsilon_t \\] donde \\(\\Delta Y_t\\) es la diferencia de la serie en el tiempo t, \\(Y_{t-1}\\) es el valor rezagado de la serie, y \\(\\epsilon_t\\) es el término de error.\n\\(\\rho\\) - 1 se sustituye por gamma (\\(\\gamma\\)), por lo que la ecuación se reescribe como:\n\\[ \\Delta Y_t = \\gamma Y_{t-1} + \\epsilon_t \\] De tal forma, que se busca comprobar si \\(\\gamma\\) es igual a cero (H0: \\(\\gamma\\) = 0) o menor que cero (H1: \\(\\gamma\\) &lt; 0). Si no se rechaza la hipótesis nula, se concluye que la serie tiene una raíz unitaria y, por lo tanto, es no estacionaria.\nPor otra parte, la Prueba Dickey-Fuller Aumentada (ADF) extiende la prueba DF al incluir términos de rezago adicionales para abordar la autocorrelación en los errores, es decir, asume que los errores están autorrelacionados. La hipótesis nula sigue siendo la misma (\\(\\rho\\) = 1), pero la inclusión de términos de rezago de la variable dependiente permite una mayor flexibilidad en el modelado de la serie temporal, como variables de control.\nLa ecuación de la prueba ADF es: \\[ \\Delta Y_t = \\gamma Y_{t-1} + \\sum_{i=1}^{p} \\alpha_i \\Delta Y_{t-i} + \\nu_t \\]\ndonde \\(p\\) es el número de términos de rezago incluidos, y \\(\\alpha_i\\) son los coeficientes asociados a esos términos.\nEl gran reto es esta segunda prueba es elegir el número adecuado de rezagos (\\(p\\)). Si se elige un valor demasiado bajo, puede no capturar toda la autocorrelación en los errores, mientras que un valor demasiado alto puede reducir la potencia de la prueba; por lo cual, es recomendable utilizar criterios de información como AIC (Akaike Information Criterion) y BIC (Bayesian Information Criterion).\nFinalmente, la Prueba Phillips-Perron (PP) es otra extensión de la prueba DF que también aborda la autocorrelación y la heterocedasticidad en los errores, pero lo hace mediante una corrección no paramétrica en lugar de incluir términos de rezago adicionales. La hipótesis nula sigue siendo la misma (\\(\\rho\\) = 1). La ecuación básica de la prueba PP es similar a la de la prueba DF:\n\\[ \\Delta Y_t = \\gamma Y_{t-1} + \\epsilon_t \\]\nUtiliza la misma ecuación básica que la prueba DF, pero ajusta o corrige el estadístico de prueba, a efecto de realizar la comparación de valores críticos correctamente. La única debilidad de la prueba es que es efectiva y confiable con muestras grandes de datos, no es efectiva con muestras pequeñas.\nA continuación, se aplican las tres pruebas de raíz unitaria (DF, ADF y PP) a las series de tiempo de los precios de cierre de las acciones de Waltmart, América Móvil y del IPC de México:\n\n\n\nResultados de Pruebas de Raíz Unitaria\n\n\n\nDickey.Fuller..tseries.\nADF..urca.\nPhillips.Perron..urca.\n\n\n\n\nWALMEX\n-2.1537\n-2.8075\n-2.6483\n\n\nBIMBOA\n-1.1215\n-1.6990\n-1.6514\n\n\nIPC (MXX)\n-2.7607\n-1.1188\n-1.1146\n\n\n\n\n\nPara la interpretación de la prueba es fundamental establecer que gamma nos indica la tasa de cambio de reversión a la media, dada por \\(\\gamma = (\\rho - 1)\\), de tal forma que la hipótesis nula es que H0 : \\(\\gamma = 0\\), es decir la serie no regresa a su media, y por lo tanto, es una serie no estacionaria o de caminata aleatoria. Por el contrario, la hipótesis alternativa es H1 : \\(\\gamma &lt; 0\\), entonces la serie tiende a regresar a su promedio, por lo cual es una serie estacionaria.\nCon base en lo anterior, y utilizando el valor crítico al 5% (nivel de confianza del 95%) de -2.86 para muestras grandes, se concluye que las tres series (WALMEX, BIMBOA e IPC) se catalogan como NO ESTACIONARIAS, ya que en todas las pruebas el valor calculado es mayor (menos negativo) que el valor crítico, por lo cual no se rechaza la hipótesis nula de raíz unitaria. Asimismo, conforme a la teoría y debido a que se utilizan gran cantidad de datos muestrales, la prueba más confiable es la de Phillips Perron, aunque para este caso, las demás pruebas confirman el no rechazo de la hipótesis nula.\nConclusiones:\n\nNo hay evidencia estadísticamente significativa para rechazar la Hipótesis Nula.\nLas tres series son NO ESTACIONARIAS.\nLas tres series presentan raíz unitaria y se comportan aleatoriamente.\n\nImplicaciones:\n\nSi se realizara la regresión con alguna de las series de Waltmart o Bimbo con el IPC nos daría una regresión espuria, con información de correlación-causal alta que sería falsa.\nComo tienen memoria a largo plazo, cualquier información externa que impacte significativamente la serie, mantendrá su efecto en el largo plazo.\n\nCorolarios:\n\nLa estacionaridad se vuelve un requisito indispensable para realizar inferencia estadística y pronósticos válidos y confiables.\nSe buscaría trabajar con los rendimientos de las series buscando que tengan un comportamiento estacionario.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Pruebas de Estacionariedad en Series de Tiempo Financieras</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "3  Summary",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Summary</span>"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "crumbs": [
+      "References"
+    ]
+  }
+]

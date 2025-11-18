@@ -1,0 +1,169 @@
+# Pruebas de Estacionariedad en Series de Tiempo Financieras
+
+Para realizar las pruebas de estacionaridad, se seleccionaron las acciones de Waltmart y Bimbo de México, y del Índice de Precios y Cotizaciones de México. Primero se obtienen los datos de Yahoo Finance de los precios de cierre del 01 de enero de 2020 a la fecha como se muestra a continuación:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# 1. Instalar los paquetes (solo si es necesario)
+
+if (!requireNamespace("tseries", quietly = TRUE)) { install.packages("tseries") }
+if (!requireNamespace("urca", quietly = TRUE)) { install.packages("urca") }
+if (!requireNamespace("dplyr", quietly = TRUE)) { install.packages("dplyr") }
+if (!requireNamespace("quantmod", quietly = TRUE)) { install.packages("quantmod") }
+if (!requireNamespace("ggplot2", quietly = TRUE)) { install.packages("ggplot2") }
+if (!requireNamespace("kableExtra", quietly = TRUE)) { install.packages("kableExtra") }
+
+# 1. Cargar librerías
+library(quantmod)
+library(dplyr)
+library(ggplot2)
+library(tseries)
+library(urca)
+library(kableExtra)
+
+
+# 2. Definir fechas
+inicio <- "2020-01-01"
+fin <- Sys.Date()
+
+# 3. Descargar los datos
+getSymbols("WALMEX.MX", src = "yahoo", from = inicio, to = fin, auto.assign = TRUE)
+getSymbols("BIMBOA.MX", src = "yahoo", from = inicio, to = fin, auto.assign = TRUE)
+getSymbols("^MXX", src = "yahoo", from = inicio, to = fin, auto.assign = TRUE)
+
+# 4. Unir todo en una sola tabla
+datos_brutos <- merge(Cl(WALMEX.MX), Cl(BIMBOA.MX), Cl(MXX))
+
+# 5. LIMPIEZA DE DATOS (Aquí está la solución)
+# na.omit elimina las filas con huecos, conectando las líneas en el gráfico
+datos_finales <- na.omit(datos_brutos)
+
+# 6. Renombrar las columnas
+colnames(datos_finales) <- c("WALMEX", "BIMBOA", "MXX")
+
+# 7. Preparar datos para ggplot
+# Creamos un data.frame explícito con la fecha como columna
+df_graficar <- data.frame(Fecha = index(datos_finales), coredata(datos_finales))
+
+# 8. Gráfica de WALMEX
+ggplot(df_graficar, aes(x = Fecha, y = WALMEX)) +
+  geom_line(color = "blue") +
+  labs(title = "Precios de Cierre de Walmart", 
+       subtitle = "Serie continua (sin datos faltantes)",
+       x = "Fecha", y = "Precio (MXN)") +
+  theme_minimal()
+
+# 9. Gráfica de BIMBO
+ggplot(df_graficar, aes(x = Fecha, y = BIMBOA)) +
+  geom_line(color = "red") +
+  labs(title = "Precios de Cierre de Bimbo", 
+       subtitle = "Serie continua (sin datos faltantes)",
+       x = "Fecha", y = "Precio (MXN)") +
+  theme_minimal()
+
+# 10. Gráfica del IPC
+ggplot(df_graficar, aes(x = Fecha, y = MXX)) +
+  geom_line(color = "darkgreen") +
+  labs(title = "Precios de Cierre del IPC de México", 
+       subtitle = "Serie continua (sin datos faltantes)",
+       x = "Fecha", y = "Puntos") +
+  theme_minimal()
+
+```
+
+Primero explicaremos brevemente la Prueba Dickey-Fuller (DF). Utiliza un modelo simple para probar si $\rho$ (coeficiente de correlación) es igual 1. Si se cumple la hipótesis nula, la serie se considera no estacionaria. La hipótesis nula (H0) de la prueba establece que existe una raíz unitaria ($\rho$ = 1), mientras que la hipótesis alternativa (H1) indica que la serie es estacionaria ($\rho$ \< 1). Su principal debilidad es que asume que los errores no están autocorrelacionados.
+
+La ecuación que utiliza DF es:
+
+$$ \Delta Y_t = (\rho - 1)Y_{t-1} + \epsilon_t $$ donde $\Delta Y_t$ es la diferencia de la serie en el tiempo t, $Y_{t-1}$ es el valor rezagado de la serie, y $\epsilon_t$ es el término de error.
+
+$\rho$ - 1 se sustituye por gamma ($\gamma$), por lo que la ecuación se reescribe como:
+
+$$ \Delta Y_t = \gamma Y_{t-1} + \epsilon_t $$ De tal forma, que se busca comprobar si $\gamma$ es igual a cero (H0: $\gamma$ = 0) o menor que cero (H1: $\gamma$ \< 0). Si no se rechaza la hipótesis nula, se concluye que la serie tiene una raíz unitaria y, por lo tanto, es no estacionaria.
+
+Por otra parte, la Prueba Dickey-Fuller Aumentada (ADF) extiende la prueba DF al incluir términos de rezago adicionales para abordar la autocorrelación en los errores, es decir, asume que los errores están autorrelacionados. La hipótesis nula sigue siendo la misma ($\rho$ = 1), pero la inclusión de términos de rezago de la variable dependiente permite una mayor flexibilidad en el modelado de la serie temporal, como variables de control.
+
+La ecuación de la prueba ADF es: $$ \Delta Y_t = \gamma Y_{t-1} + \sum_{i=1}^{p} \alpha_i \Delta Y_{t-i} + \nu_t $$
+
+donde $p$ es el número de términos de rezago incluidos, y $\alpha_i$ son los coeficientes asociados a esos términos.
+
+El gran reto es esta segunda prueba es elegir el número adecuado de rezagos ($p$). Si se elige un valor demasiado bajo, puede no capturar toda la autocorrelación en los errores, mientras que un valor demasiado alto puede reducir la potencia de la prueba; por lo cual, es recomendable utilizar criterios de información como AIC (Akaike Information Criterion) y BIC (Bayesian Information Criterion).
+
+Finalmente, la Prueba Phillips-Perron (PP) es otra extensión de la prueba DF que también aborda la autocorrelación y la heterocedasticidad en los errores, pero lo hace mediante una corrección no paramétrica en lugar de incluir términos de rezago adicionales. La hipótesis nula sigue siendo la misma ($\rho$ = 1). La ecuación básica de la prueba PP es similar a la de la prueba DF:
+
+$$ \Delta Y_t = \gamma Y_{t-1} + \epsilon_t $$
+
+Utiliza la misma ecuación básica que la prueba DF, pero ajusta o corrige el estadístico de prueba, a efecto de realizar la comparación de valores críticos correctamente. La única debilidad de la prueba es que es efectiva y confiable con muestras grandes de datos, no es efectiva con muestras pequeñas.
+
+A continuación, se aplican las tres pruebas de raíz unitaria (DF, ADF y PP) a las series de tiempo de los precios de cierre de las acciones de Waltmart, América Móvil y del IPC de México:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# 1. Limpieza de datos
+datos_limpios <- na.omit(datos_finales)
+
+# 2. Cálculos
+get_ur_val <- function(x) { as.numeric(x@teststat[1]) }
+
+# WALMEX
+walmex_df  <- adf.test(datos_limpios$WALMEX)
+walmex_adf <- ur.df(datos_limpios$WALMEX, type = "drift", selectlags = "AIC")
+walmex_pp  <- ur.pp(datos_limpios$WALMEX, type = "Z-tau", model = "constant", lags = "short")
+
+# BIMBOA
+bimboa_df  <- adf.test(datos_limpios$BIMBOA)
+bimboa_adf <- ur.df(datos_limpios$BIMBOA, type = "drift", selectlags = "AIC")
+bimboa_pp  <- ur.pp(datos_limpios$BIMBOA, type = "Z-tau", model = "constant", lags = "short")
+
+# MXX
+mxx_df  <- adf.test(datos_limpios$MXX)
+mxx_adf <- ur.df(datos_limpios$MXX, type = "drift", selectlags = "AIC")
+mxx_pp  <- ur.pp(datos_limpios$MXX, type = "Z-tau", model = "constant", lags = "short")
+
+# 3. Crear la tabla TRANSPUESTA
+# Se crea un data frame donde cada fila es una acción
+tabla_resultados <- data.frame(
+  `Dickey-Fuller (tseries)` = c(walmex_df$statistic, bimboa_df$statistic, mxx_df$statistic),
+  `ADF (urca)`             = c(get_ur_val(walmex_adf), get_ur_val(bimboa_adf), get_ur_val(mxx_adf)),
+  `Phillips-Perron (urca)` = c(get_ur_val(walmex_pp), get_ur_val(bimboa_pp), get_ur_val(mxx_pp))
+)
+
+# Se asignan los nombres de las filas (Las Series)
+rownames(tabla_resultados) <- c("WALMEX", "BIMBOA", "IPC (MXX)")
+
+# 4. Renderizar la tabla
+tabla_resultados %>%
+  kbl(caption = "Resultados de Pruebas de Raíz Unitaria",
+      digits = 4,             
+      align = "c") %>%        
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = F, 
+                position = "center") %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#2c3e50") %>% 
+  column_spec(1, bold = TRUE)
+
+```
+
+Para la interpretación de la prueba es fundamental establecer que gamma nos indica la tasa de cambio de reversión a la media, dada por $\gamma = (\rho - 1)$, de tal forma que la hipótesis nula es que H0 : $\gamma = 0$, es decir la serie no regresa a su media, y por lo tanto, es una serie no estacionaria o de caminata aleatoria. Por el contrario, la hipótesis alternativa es H1 : $\gamma < 0$, entonces la serie tiende a regresar a su promedio, por lo cual es una serie estacionaria.
+
+Con base en lo anterior, y utilizando el valor crítico al 5% (nivel de confianza del 95%) de -2.86 para muestras grandes, se concluye que las tres series (WALMEX, BIMBOA e IPC) se catalogan como NO ESTACIONARIAS, ya que en todas las pruebas el valor calculado es mayor (menos negativo) que el valor crítico, por lo cual no se rechaza la hipótesis nula de raíz unitaria. Asimismo, conforme a la teoría y debido a que se utilizan gran cantidad de datos muestrales, la prueba más confiable es la de Phillips Perron, aunque para este caso, las demás pruebas confirman el no rechazo de la hipótesis nula.
+
+Conclusiones:
+
+-   No hay evidencia estadísticamente significativa para rechazar la Hipótesis Nula.
+
+-   Las tres series son NO ESTACIONARIAS.
+
+-   Las tres series presentan raíz unitaria y se comportan aleatoriamente.
+
+Implicaciones:
+
+-   Si se realizara la regresión con alguna de las series de Waltmart o Bimbo con el IPC nos daría una regresión espuria, con información de correlación-causal alta que sería falsa.
+
+-   Como tienen memoria a largo plazo, cualquier información externa que impacte significativamente la serie, mantendrá su efecto en el largo plazo.
+
+Corolarios:
+
+-   La estacionaridad se vuelve un requisito indispensable para realizar inferencia estadística y pronósticos válidos y confiables.
+
+-   Se buscaría trabajar con los rendimientos de las series buscando que tengan un comportamiento estacionario.

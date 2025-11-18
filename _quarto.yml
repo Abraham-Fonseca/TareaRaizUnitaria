@@ -1,0 +1,25 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Series Estacionarias y No Estacionarias (Raíz Unitari)a"
+  author: "Abraham Fonseca Tinoco"
+  date: "11/17/2025"
+  chapters:
+    - index.qmd
+    - intro.qmd
+
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+
